@@ -6,6 +6,7 @@
 ondemand() {
   set_cpu_gov ondemand
   set_dmc_gov ondemand
+  apply_boost_freq
   local gov="/sys/devices/system/cpu/cpufreq/ondemand"
   if [ -d "$gov" ]; then
     echo 300000 > "$gov/sampling_rate" 2>/dev/null
