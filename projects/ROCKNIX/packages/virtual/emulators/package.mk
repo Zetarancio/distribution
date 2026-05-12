@@ -52,20 +52,20 @@ case "${DEVICE}" in
     PKG_EMUS+=" aethersx2-sa azahar-sa dolphin-sa drastic-sa mednafen melonds-sa supermodel-sa vita3k-sa"
     LIBRETRO_CORES+=" beetle-psx-lr beetle-saturn-lr bsnes-lr bsnes-hd-lr dolphin-lr"
     ;;
-  SDM845|SM8250)
+  SM8250)
     [ "${ENABLE_32BIT}" == "true" ] && EMUS_32BIT="box86 daedalusx64-sa desmume-lr gpsp-lr pcsx_rearmed-lr"
-    PKG_EMUS+=" aethersx2-sa azahar-sa bigpemu-sa cemu-sa dolphin-sa mednafen melonds-sa nanoboyadvance-sa rpcs3-sa supermodel-sa \
+    PKG_EMUS+=" aethersx2-sa azahar-sa bigpemu-sa cemu-sa dolphin-sa heroic mednafen melonds-sa nanoboyadvance-sa rpcs3-sa supermodel-sa \
                 xemu-sa skyemu-sa steam vita3k-sa"
     LIBRETRO_CORES+=" beetle-psx-lr beetle-saturn-lr bsnes-lr bsnes-hd-lr dolphin-lr kronos-lr"
     ;;
   SM8550)
     [ "${ENABLE_32BIT}" == "true" ] && EMUS_32BIT="box86 daedalusx64-sa desmume-lr gpsp-lr pcsx_rearmed-lr"
-    PKG_EMUS+=" aethersx2-sa ares-sa azahar-sa bigpemu-sa cemu-sa dolphin-sa drastic-sa gopher64-sa mednafen melonds-sa nanoboyadvance-sa rpcs3-sa supermodel-sa \
+    PKG_EMUS+=" aethersx2-sa ares-sa azahar-sa bigpemu-sa cemu-sa dolphin-sa drastic-sa gopher64-sa heroic mednafen melonds-sa nanoboyadvance-sa rpcs3-sa supermodel-sa \
                 xemu-sa skyemu-sa steam vita3k-sa"
     LIBRETRO_CORES+=" beetle-psx-lr beetle-saturn-lr bsnes-lr bsnes-hd-lr dolphin-lr kronos-lr"
     ;;
-  SM8650)
-    PKG_EMUS+=" aethersx2-sa azahar-sa bigpemu-sa cemu-sa dolphin-sa gopher64-sa mednafen melonds-sa nanoboyadvance-sa rpcs3-sa supermodel-sa \
+  SM8650|SM8750)
+    PKG_EMUS+=" aethersx2-sa azahar-sa bigpemu-sa cemu-sa dolphin-sa gopher64-sa heroic mednafen melonds-sa nanoboyadvance-sa rpcs3-sa supermodel-sa \
                 xemu-sa skyemu-sa steam vita3k-sa"
     LIBRETRO_CORES+=" beetle-psx-lr beetle-saturn-lr bsnes-lr bsnes-hd-lr dolphin-lr kronos-lr"
     ;;
@@ -150,7 +150,7 @@ makeinstall_target() {
 
   ### Nintendo 3DS
   case ${DEVICE} in
-    RK3576|RK3566|SDM845|SM8250|SM8550|SM8650|S922X|RK3588|SM6115)
+    RK3576|RK3566|SM8250|SM8550|SM8650|SM8750|S922X|RK3588|SM6115)
       add_emu_core 3ds azahar azahar-sa true
       add_es_system 3ds
       install_script "Start Azahar.sh"
@@ -159,7 +159,7 @@ makeinstall_target() {
 
   ### Commodore Amiga
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SDM845|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core amiga retroarch puae2021 true
       add_emu_core amiga retroarch puae false
     ;;
@@ -174,7 +174,7 @@ makeinstall_target() {
 
   ### Commodore Amiga CD32
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SDM845|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core amigacd32 retroarch puae2021 true
       add_emu_core amigacd32 retroarch puae false
       ;;
@@ -240,7 +240,7 @@ makeinstall_target() {
       add_emu_core atomiswave retroarch flycast false
       add_emu_core atomiswave flycast flycast-sa false
       ;;
-    SDM845|SM8250|SM8550|SM8650|S922X)
+    SM8250|SM8550|SM8650|SM8750|S922X)
       add_emu_core atomiswave flycast flycast-sa true
       add_emu_core atomiswave retroarch flycast false
       add_emu_core atomiswave retroarch flycast2021 false
@@ -327,7 +327,7 @@ makeinstall_target() {
       add_emu_core dreamcast retroarch flycast false
       add_emu_core dreamcast flycast flycast-sa false
       ;;
-    SDM845|SM8250|SM8550|SM8650|S922X)
+    SM8250|SM8550|SM8650|SM8750|S922X)
       add_emu_core dreamcast flycast flycast-sa true
       add_emu_core dreamcast retroarch flycast false
       add_emu_core dreamcast retroarch flycast2021 false
@@ -354,7 +354,7 @@ makeinstall_target() {
   add_emu_core famicom retroarch quicknes false
   add_emu_core famicom retroarch mesen false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core famicom mednafen nes false
       ;;
   esac
@@ -371,7 +371,7 @@ makeinstall_target() {
   add_emu_core fds retroarch quicknes false
   add_emu_core fds retroarch mesen false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core fds mednafen nes false
       ;;
   esac
@@ -417,12 +417,12 @@ makeinstall_target() {
   add_emu_core gb retroarch skyemu false
   add_emu_core gb retroarch mesen-s false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core gb mednafen gb false
       ;;
   esac
   case ${DEVICE} in
-    SDM845|SM8250|SM8550|SM8650)
+    SM8250|SM8550|SM8650|SM8750)
       add_emu_core gb skyemu skyemu-sa false
       install_script "Start SkyEmu.sh"
       ;;
@@ -445,12 +445,12 @@ makeinstall_target() {
   add_emu_core gbh retroarch skyemu false
   add_emu_core gbh retroarch mesen-s false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core gbh mednafen gb false
       ;;
   esac
   case ${DEVICE} in
-    SDM845|SM8250|SM8550|SM8650)
+    SM8250|SM8550|SM8650|SM8750)
       add_emu_core gbh skyemu skyemu-sa false
       ;;
   esac
@@ -471,21 +471,21 @@ makeinstall_target() {
     H700|RK3326|RK3576|RK3566|S922X)
       add_emu_core gba retroarch gpsp false
       ;;
-    RK3399|RK3588|SM6115|SM8250|SM8550|SDM845)
+    RK3399|RK3588|SM6115|SM8250|SM8550)
       add_emu_core gba retroarch gpsp false
       add_emu_core gba nanoboyadvance nanoboyadvance-sa false
       ;;
-    SM8650)
+    SM8650|SM8750)
       add_emu_core gba nanoboyadvance nanoboyadvance-sa false
       ;;
   esac
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core gba mednafen gba false
       ;;
   esac
   case ${DEVICE} in
-    SDM845|SM8250|SM8550|SM8650)
+    SM8250|SM8550|SM8650|SM8750)
       add_emu_core gba skyemu skyemu-sa false
       ;;
   esac
@@ -503,16 +503,16 @@ makeinstall_target() {
   add_emu_core gbah retroarch beetle_gba false
   add_emu_core gbah retroarch skyemu false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core gbah retroarch gpsp false
       add_emu_core gbah mednafen gba false
       ;;
-    SM8650)
+    SM8650|SM8750)
       add_emu_core gbah mednafen gba false
       ;;
   esac
   case ${DEVICE} in
-    SDM845|SM8250|SM8550|SM8650)
+    SM8250|SM8550|SM8650|SM8750)
       add_emu_core gbah skyemu skyemu-sa false
       ;;
   esac
@@ -534,12 +534,12 @@ makeinstall_target() {
       add_emu_core gbav retroarch gpsp false
       add_emu_core gbav mednafen gba false
       ;;
-    SM8650)
+    SM8650|SM8750)
       add_emu_core gbav mednafen gba false
       ;;
   esac
   case ${DEVICE} in
-    SDM845|SM8250|SM8550|SM8650)
+    SM8250|SM8550|SM8650|SM8750)
       add_emu_core gbav skyemu skyemu-sa false
       ;;
   esac
@@ -556,12 +556,12 @@ makeinstall_target() {
   add_emu_core gbc retroarch skyemu false
   add_emu_core gbc retroarch mesen-s false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core gbc mednafen gb false
       ;;
   esac
   case ${DEVICE} in
-    SDM845|SM8250|SM8550|SM8650)
+    SM8250|SM8550|SM8650|SM8750)
       add_emu_core gbc skyemu skyemu-sa false
       ;;
   esac
@@ -583,12 +583,12 @@ makeinstall_target() {
   add_emu_core gbch retroarch skyemu false
   add_emu_core gbch retroarch mesen-s false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core gbch mednafen gb false
       ;;
   esac
   case ${DEVICE} in
-    SDM845|SM8250|SM8550|SM8650)
+    SM8250|SM8550|SM8650|SM8750)
       add_emu_core gbch skyemu skyemu-sa false
       ;;
   esac
@@ -601,14 +601,14 @@ makeinstall_target() {
 
   ### Nintendo GameCube
   case ${DEVICE} in
-    RK3399|SDM845|SM8250|SM8550|SM8650)
+    RK3399|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core gamecube dolphin dolphin-qt-gc true
       add_emu_core gamecube dolphin dolphin-sa-gc false
       add_emu_core gamecube retroarch dolphin false
       install_script "Start Dolphin.sh"
       add_es_system gamecube
       ;;
-    RK3576|RK3566|RK3588|SM6115|S922X)
+    RK3576|RK3566|RK3588|S922X)
       add_emu_core gamecube dolphin dolphin-sa-gc true
       add_emu_core gamecube retroarch dolphin false
       add_es_system gamecube
@@ -617,7 +617,7 @@ makeinstall_target() {
 
   ### Nintendo Triforce
   case ${DEVICE} in
-    RK3399|SDM845|SM8250|SM8550|SM8650)
+    RK3399|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core triforce dolphin dolphin-qt-gc true
       install_script "Start Dolphin.sh"
       add_es_system triforce
@@ -626,7 +626,7 @@ makeinstall_target() {
 
   ### Nintendo Wii/ware
   case ${DEVICE} in
-    RK3399|SDM845|SM8250|SM8550|SM8650)
+    RK3399|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core wii dolphin dolphin-qt-wii true
       add_emu_core wiiware dolphin dolphin-qt-wii true
       add_emu_core wii dolphin dolphin-sa-wii false
@@ -636,7 +636,7 @@ makeinstall_target() {
       add_es_system wii
       add_es_system wiiware
       ;;
-    RK3576|RK3566|RK3588|SM6115|S922X)
+    RK3576|RK3566|RK3588|S922X)
       add_emu_core wii dolphin dolphin-sa-wii true
       add_emu_core wiiware dolphin dolphin-sa-wii true
       add_emu_core wii retroarch dolphin false
@@ -648,7 +648,7 @@ makeinstall_target() {
 
   ### Nintendo Wii U
   case ${DEVICE} in
-    SDM845|SM8250|SM8550|SM8650)
+    SM8250|SM8550|SM8650|SM8750)
       add_emu_core wiiu cemu cemu-sa true
       add_es_system wiiu
       install_script "Start CEMU.sh"
@@ -661,7 +661,7 @@ makeinstall_target() {
   add_emu_core gamegear retroarch picodrive false
   add_emu_core gamegear retroarch smsplus false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core gamegear mednafen gg false
       ;;
   esac
@@ -678,7 +678,7 @@ makeinstall_target() {
   add_emu_core ggh retroarch picodrive false
   add_emu_core ggh retroarch smsplus false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core ggh mednafen gg false
       ;;
   esac
@@ -694,12 +694,18 @@ makeinstall_target() {
   install_script "Start touchHLE.sh"
   add_es_system ios
 
-  ## Steam
+  ## Steam & Heroic Games Launcher
   case ${DEVICE} in
-    SM8250|SM8550|SM8650|SDM845)
+    SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core steam steam steam true
-      install_script "Start Steam.sh"
+      install_script "Install Steam.sh"
+      install_script "Uninstall Steam.sh"
       add_es_system steam
+      add_emu_core heroic heroic heroic true
+      install_script "Install Heroic Games Launcher.sh"
+      install_script "Uninstall Heroic Games Launcher.sh"
+      install_script "Scan Heroic Games.sh"
+      add_es_system heroic
       ;;
   esac
 
@@ -714,7 +720,7 @@ makeinstall_target() {
   ### Atari Jaguar
   add_emu_core atarijaguar retroarch virtualjaguar true
   case ${DEVICE} in
-    SM8250|SM8550|SM8650|SDM845)
+    SM8250|SM8550|SM8650|SM8750)
       add_emu_core atarijaguar bigpemu bigpemu-sa false
       install_script "Start BigPEmu.sh"
       ;;
@@ -725,7 +731,7 @@ makeinstall_target() {
   add_emu_core atarilynx retroarch handy true
   add_emu_core atarilynx retroarch beetle_lynx false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core atarilynx mednafen lynx false
       ;;
   esac
@@ -750,7 +756,7 @@ makeinstall_target() {
   add_emu_core megadrive-japan retroarch genesis_plus_gx_wide false
   add_emu_core megadrive-japan retroarch picodrive false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core megadrive-japan mednafen md false
       ;;
   esac
@@ -758,7 +764,7 @@ makeinstall_target() {
 
   ### Sega Model 3
   case ${DEVICE} in
-    RK3588|SDM845|SM8250|SM8550|SM8650)
+    RK3588|SM8250|SM8550|SM8650|SM8750)
       add_emu_core segamodel3 supermodel supermodel-sa true
       add_es_system segamodel3
       ;;
@@ -773,7 +779,7 @@ makeinstall_target() {
   add_emu_core snesmsu1 retroarch snes9x true
   add_emu_core snesmsu1 retroarch beetle_supafaust false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core snesmsu1 mednafen snes_faust false
       ;;
   esac
@@ -806,7 +812,7 @@ makeinstall_target() {
       add_emu_core naomi retroarch flycast false
       add_emu_core naomi flycast flycast-sa false
       ;;
-    SDM845|SM8250|SM8550|SM8650|S922X)
+    SM8250|SM8550|SM8650|SM8750|S922X)
       add_emu_core naomi flycast flycast-sa true
       add_emu_core naomi retroarch flycast false
       add_emu_core naomi retroarch flycast2021 false
@@ -844,7 +850,7 @@ makeinstall_target() {
   add_emu_core ngp retroarch beetle_ngp true
   add_emu_core ngp retroarch race false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core ngp mednafen ngp false
       ;;
   esac
@@ -859,7 +865,7 @@ makeinstall_target() {
   add_emu_core ngpc retroarch beetle_ngp true
   add_emu_core ngpc retroarch race false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM8250|SM8550|SM8650|SM8750)
       add_emu_core ngpc mednafen ngp false
       ;;
   esac
@@ -879,7 +885,7 @@ makeinstall_target() {
   add_emu_core n64 retroarch parallel_n64 false
   add_emu_core n64 mupen64plus mupen64plus-sa false
   case ${DEVICE} in
-    SDM845|SM8250)
+    SM8250)
       add_emu_core n64 daedalusx64 daedalusx64-sa false
       install_script "Start DaedalusX64.sh"
       ;;
@@ -889,7 +895,7 @@ makeinstall_target() {
       add_emu_core n64 ares ares-sa false
       install_script "Start DaedalusX64.sh"
       ;;
-    SM8650)
+    SM8650|SM8750)
       add_emu_core n64 gopher64 gopher64-sa false
       ;;
   esac
@@ -924,7 +930,7 @@ makeinstall_target() {
       add_emu_core nds retroarch skyemu false
       install_script "Start MelonDS.sh"
       ;;
-    SDM845|SM8250|SM8550)
+    SM8250|SM8550)
       add_emu_core nds melonds melonds-sa true
       add_emu_core nds drastic drastic-sa false
       add_emu_core nds skyemu skyemu-sa false
@@ -934,7 +940,7 @@ makeinstall_target() {
       add_emu_core nds retroarch skyemu false
       install_script "Start MelonDS.sh"
       ;;
-    SM8650)
+    SM8650|SM8750)
       add_emu_core nds melonds melonds-sa true
       add_emu_core nds skyemu skyemu-sa false
       add_emu_core nds retroarch melonds false
@@ -977,7 +983,7 @@ makeinstall_target() {
   add_emu_core nes retroarch quicknes false
   add_emu_core nes retroarch mesen false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core nes mednafen nes false
       ;;
   esac
@@ -994,7 +1000,7 @@ makeinstall_target() {
   add_emu_core nesh retroarch quicknes false
   add_emu_core nesh retroarch mesen false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core nesh mednafen nesh false
       ;;
   esac
@@ -1026,7 +1032,7 @@ makeinstall_target() {
   add_emu_core pcengine retroarch beetle_pce false
   add_emu_core pcengine retroarch beetle_supergrafx false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core pcengine mednafen pce false
       add_emu_core pcengine mednafen pce_fast false
       ;;
@@ -1043,7 +1049,7 @@ makeinstall_target() {
   add_emu_core pcenginecd retroarch beetle_pce false
   add_emu_core pcenginecd retroarch beetle_supergrafx false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core pcenginecd mednafen pce false
       add_emu_core pcenginecd mednafen pce_fast false
       ;;
@@ -1058,7 +1064,7 @@ makeinstall_target() {
   ### NEC PC-FX
   add_emu_core pcfx retroarch beetle_pcfx true
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core pcfx mednafen pcfx false
       ;;
   esac
@@ -1085,13 +1091,13 @@ makeinstall_target() {
       add_emu_core psx retroarch pcsx_rearmed32 true
       add_emu_core psx retroarch pcsx_rearmed false
       ;;
-    SDM845|SM8250|SM8550)
+    SM8250|SM8550)
       add_emu_core psx retroarch pcsx_rearmed32 true
       add_emu_core psx retroarch pcsx_rearmed false
       add_emu_core psx retroarch beetle_psx false
       add_emu_core psx mednafen psx false
       ;;
-    SM8650)
+    SM8650|SM8750)
       add_emu_core psx retroarch pcsx_rearmed true
       add_emu_core psx retroarch beetle_psx false
       add_emu_core psx mednafen psx false
@@ -1108,7 +1114,7 @@ makeinstall_target() {
 
   ### Sony Playstation 2
   case ${DEVICE} in
-    RK3399|RK3576|RK3566|RK3588|SM6115|SDM845|SM8250|SM8550|SM8650|S922X)
+    RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750|S922X)
       add_emu_core ps2 aethersx2 aethersx2-sa true
       add_es_system ps2
       install_script "Start AetherSX2.sh"
@@ -1117,7 +1123,7 @@ makeinstall_target() {
 
   ### Sony Playstation 3
   case ${DEVICE} in
-    SDM845|SM8250|SM8550|SM8650)
+    SM8250|SM8550|SM8650|SM8750)
       add_emu_core ps3 rpcs3 rpcs3-sa true
       add_es_system ps3
       install_script "Start RPCS3.sh"
@@ -1137,7 +1143,7 @@ makeinstall_target() {
 
   ### Sony Playstation Vita
   case ${DEVICE} in
-    RK3566|RK3576|RK3588|SDM845|SM6115|SM8250|SM8550|SM8650|S922X)
+    RK3566|RK3576|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750|S922X)
       add_emu_core psvita vita3k vita3k-sa true
       add_es_system psvita
       install_script "Start Vita3K.sh"
@@ -1194,7 +1200,7 @@ makeinstall_target() {
   add_emu_core genesis retroarch genesis_plus_gx_wide false
   add_emu_core genesis retroarch picodrive false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core genesis mednafen md false
       ;;
   esac
@@ -1210,7 +1216,7 @@ makeinstall_target() {
   add_emu_core genh retroarch genesis_plus_gx_wide false
   add_emu_core genh retroarch picodrive false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core genh mednafen md false
       ;;
   esac
@@ -1227,7 +1233,7 @@ makeinstall_target() {
   add_emu_core mastersystem retroarch picodrive false
   add_emu_core mastersystem retroarch smsplus false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core mastersystem mednafen sms false
       ;;
   esac
@@ -1243,7 +1249,7 @@ makeinstall_target() {
   add_emu_core megadrive retroarch genesis_plus_gx_wide false
   add_emu_core megadrive retroarch picodrive false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core megadrive mednafen md false
       ;;
   esac
@@ -1254,7 +1260,7 @@ makeinstall_target() {
   add_emu_core megadriveh retroarch genesis_plus_gx_wide false
   add_emu_core megadriveh retroarch picodrive false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core megadriveh mednafen md false
       ;;
   esac
@@ -1272,7 +1278,7 @@ makeinstall_target() {
       add_emu_core saturn retroarch beetle_saturn false
       add_emu_core saturn mednafen ss false
       ;;
-    SDM845|SM8250|SM8550|SM8650)
+    SM8250|SM8550|SM8650|SM8750)
       add_emu_core saturn retroarch beetle_saturn false
       add_emu_core saturn retroarch kronos false
       add_emu_core saturn mednafen ss false
@@ -1285,7 +1291,7 @@ makeinstall_target() {
 
   ### Sega ST-V
   case ${DEVICE} in
-    RK3588|SM6115|SM8250|SM8550|SM8650)
+    RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core st-v mednafen ss true
       ;;
   esac
@@ -1308,7 +1314,7 @@ makeinstall_target() {
 
   ### Microsoft XBox
   case ${DEVICE} in
-    SDM845|SM8250|SM8550|SM8650)
+    SM8250|SM8550|SM8650|SM8750)
       add_emu_core xbox xemu xemu-sa true
       add_es_system xbox
       install_script "Start Xemu.sh"
@@ -1332,7 +1338,7 @@ makeinstall_target() {
   add_emu_core supergrafx retroarch beetle_supergrafx true
   add_emu_core supergrafx retroarch beetle_pce false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core supergrafx mednafen pce false
       add_emu_core supergrafx mednafen pce_fast false
       ;;
@@ -1358,13 +1364,13 @@ makeinstall_target() {
   add_emu_core snes retroarch bsnes2014_performance false
   add_emu_core snes retroarch mesen-s false
   case ${DEVICE} in
-    RK3399|RK3588|SM6115|SDM845|SM8250|SM8550|SM8650|S922X)
+    RK3399|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750|S922X)
       add_emu_core snes retroarch bsnes false
       add_emu_core snes retroarch bsnes_hd_beta false
       ;;
   esac
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core snes mednafen snes_faust false
       ;;
   esac
@@ -1389,13 +1395,13 @@ makeinstall_target() {
   add_emu_core snesh retroarch bsnes2014_performance false
   add_emu_core snesh retroarch mesen-s false
   case ${DEVICE} in
-    RK3399|RK3588|SM6115|SDM845|SM8250|SM8550|SM8650|S922X)
+    RK3399|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750|S922X)
       add_emu_core snesh retroarch bsnes false
       add_emu_core snesh retroarch bsnes_hd_beta false
       ;;
   esac
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core snesh mednafen snes_faust false
       ;;
   esac
@@ -1420,13 +1426,13 @@ makeinstall_target() {
   add_emu_core sfc retroarch bsnes2014_performance false
   add_emu_core sfc retroarch mesen-s false
   case ${DEVICE} in
-    RK3399|RK3588|SM6115|SDM845|SM8250|SM8550|SM8650|S922X)
+    RK3399|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750|S922X)
       add_emu_core sfc retroarch bsnes false
       add_emu_core sfc retroarch bsnes_hd_beta false
       ;;
   esac
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core sfc mednafen snes_faust false
       ;;
   esac
@@ -1476,7 +1482,7 @@ makeinstall_target() {
   add_emu_core tg16 retroarch beetle_pce false
   add_emu_core tg16 retroarch beetle_supergrafx false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core tg16 mednafen pce false
       add_emu_core tg16 mednafen pce_fast false
       ;;
@@ -1488,7 +1494,7 @@ makeinstall_target() {
   add_emu_core tg16cd retroarch beetle_pce false
   add_emu_core tg16cd retroarch beetle_supergrafx false
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core tg16cd mednafen pce false
       add_emu_core tg16cd mednafen pce_fast false
       ;;
@@ -1514,7 +1520,7 @@ makeinstall_target() {
   ### Nintendo VirtualBoy
   add_emu_core virtualboy retroarch beetle_vb true
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core virtualboy mednafen vb false
       ;;
   esac
@@ -1523,7 +1529,7 @@ makeinstall_target() {
   ### Bandai Wonderswan
   add_emu_core wonderswan retroarch beetle_wswan true
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core wonderswan mednafen wswan false
       ;;
   esac
@@ -1537,7 +1543,7 @@ makeinstall_target() {
   ### Bandai Wonderswan Color
   add_emu_core wonderswancolor retroarch beetle_wswan true
   case ${DEVICE} in
-    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650)
+    H700|RK3326|RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750)
       add_emu_core wonderswancolor mednafen wswan false
       ;;
   esac
@@ -1567,6 +1573,10 @@ makeinstall_target() {
   ### Palm OS
   add_emu_core palm retroarch mu true
   add_es_system palm
+
+  ### GamePark GP32
+  add_emu_core gp32 retroarch mame true
+  add_es_system gp32
 
   ### PC Ports
   add_emu_core ports portmaster portmaster true
