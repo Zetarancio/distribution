@@ -6,6 +6,7 @@
 /dts-v1/;
 
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/gpio-keys.h>
 #include <dt-bindings/leds/common.h>
 #include <dt-bindings/pinctrl/rockchip.h>
 #include <dt-bindings/pwm/pwm.h>
@@ -32,30 +33,7 @@
 		stdout-path = "serial2:1500000n8";
 	};
 
-	/* adc-keys DISABLED: volume buttons are on GPIO, not ADC.
-	 * The adc-keys driver polls saradc ch0 which is floating on Miyoo Flip,
-	 * causing phantom KEY_VOLUMEDOWN and triggering recovery_mode in init.
-	 * See sydarn/distribution-rn DTS (reference) which omits adc-keys entirely. */
-	adc_keys: adc-keys {
-		compatible = "adc-keys";
-		io-channels = <&saradc 0>;
-		io-channel-names = "buttons";
-		keyup-threshold-microvolt = <1800000>;
-		poll-interval = <100>;
-		status = "disabled";
-
-		vol-up-key {
-			label = "volume up";
-			linux,code = <KEY_VOLUMEUP>;
-			press-threshold-microvolt = <1750>;
-		};
-
-		vol-down-key {
-			label = "volume down";
-			linux,code = <KEY_VOLUMEDOWN>;
-			press-threshold-microvolt = <297500>;
-		};
-	};
+	/* No adc-keys: volume buttons are on GPIO; saradc ch0 is owned by joypad. */
 
 /* RetroArch joypad button ID reference:
 #define RETRO_DEVICE_ID_JOYPAD_B        0
@@ -313,19 +291,18 @@
 		simple-audio-card,hp-det-gpios = <&gpio4 RK_PC6 GPIO_ACTIVE_LOW>;
 		simple-audio-card,aux-devs = <&spk_amp>;
 		simple-audio-card,mclk-fs = <256>;
-		simple-audio-card,pin-switches = "Speaker";
 		simple-audio-card,widgets =
 			"Microphone", "Mic Jack",
 			"Headphone", "Headphones",
-			"Speaker", "Speaker";
+			"Speaker", "Internal Speakers";
 		simple-audio-card,routing =
 			"MICL", "Mic Jack",
 			"Headphones", "HPOL",
 			"Headphones", "HPOR",
 			"Speaker Amp INL", "SPKO",
 			"Speaker Amp INR", "SPKO",
-			"Speaker", "Speaker Amp OUTL",
-			"Speaker", "Speaker Amp OUTR";
+			"Internal Speakers", "Speaker Amp OUTL",
+			"Internal Speakers", "Speaker Amp OUTR";
 
 		simple-audio-card,cpu {
 			sound-dai = <&i2s1_8ch>;
@@ -365,15 +342,15 @@
 			<3200000 0>;
 	};
 
-	/* Volume keys (GPIO) and lid (hall sensor). Stock has vol + lid in gpio-keys-polled. */
-	gpio_keys: gpio-keys {
+	/* Volume keys (GPIO). Stock has them in gpio-keys-polled. */
+	gpio_keys_volume: gpio-keys-volume {
 		compatible = "gpio-keys";
-		pinctrl-0 = <&btn_pins_vol>, <&gpio_hall_l>;
+		pinctrl-0 = <&btn_pins_vol>;
 		pinctrl-names = "default";
 
 		button-volup {
 			autorepeat;
-			debounce-interval = <10>;	
+			debounce-interval = <10>;
 			gpios = <&gpio3 RK_PA7 GPIO_ACTIVE_LOW>;
 			label = "Volume Up";
 			linux,code = <KEY_VOLUMEUP>;
@@ -386,14 +363,21 @@
 			label = "Volume Down";
 			linux,code = <KEY_VOLUMEDOWN>;
 		};
+	};
 
-		lid {
+	/* Lid (hall sensor). Wake on lid OPEN only; closing must not wake. */
+	gpio_keys_hall: gpio-keys-hall {
+		compatible = "gpio-keys";
+		pinctrl-0 = <&hall_int_l>;
+		pinctrl-names = "default";
+
+		lid-switch {
 			gpios = <&gpio0 RK_PC6 GPIO_ACTIVE_LOW>;
 			label = "Lid";
-			linux,input-type = <EV_SW>;
 			linux,code = <SW_LID>;
+			linux,input-type = <EV_SW>;
+			wakeup-event-action = <EV_ACT_DEASSERTED>;
 			wakeup-source;
-			wakeup-event-action = <2>;
 			debounce-interval = <20>;
 		};
 	};
@@ -592,12 +576,6 @@
 			       <200000000>, <1200000000>;
 };
 
-/* DFI: devfreq-event for DMC (DDRMON). Patch 1011 adds PM suspend/resume to re-init after deep sleep. */
-/* Redundant: default okay in rk356x-base.dtsi */
-&dfi {
-	status = "okay";
-};
-
 /* DSI host: VP1 -> DSI0 -> panel. Panel is rocknix,generic-dsi (MIPI DSI, init seq from BSP). */
 &dsi0 {
 	status = "okay";
@@ -730,36 +708,10 @@
 	status = "okay";
 };
 
-/*
- * I2C0: PMIC (RK817 @0x20), CPU regulator.
- * There may be two board revisions: one with TCS4525 @0x1c, one with RK8600 @0x40.
- * Stock firmware enables both; whichever is populated probes. This DTS uses RK8600;
- * TCS4525 node is kept from stock (latest firmware) and it's currently untested on
- * TCS4525 variant (if it exists). 100 kHz for power (commit 601ccabc20).
- */
+/* I2C0: RK817 PMIC @0x20 and RK8600 CPU regulator @0x40. 100 kHz for power. */
 &i2c0 {
 	status = "okay";
 	clock-frequency = <100000>;
-
-	/* CPU rail, TCS4525 variant @0x1c. From stock miyoo355_fw_20250509213001 DTB; disabled (this build uses RK8600). */
-	vdd_cpu: tcs4525@1c {
-		compatible = "tcs,tcs4525";
-		reg = <0x1c>;
-		vin-supply = <&vccsys>;
-		regulator-compatible = "fan53555-reg";
-		regulator-name = "vdd_cpu";
-		regulator-min-microvolt = <712500>;
-		regulator-max-microvolt = <1390000>;
-		regulator-init-microvolt = <900000>;
-		regulator-ramp-delay = <2300>;
-		fcs,suspend-voltage-selector = <1>;
-		regulator-boot-on;
-		regulator-always-on;
-		status = "okay";
-		regulator-state-mem {
-			regulator-off-in-suspend;
-		};
-	};
 
     /* CPU rail, RK8600 variant @0x40. fan53555 driver probes this (RK8600 shares code). Must set fcs,suspend-voltage-selector
      * so driver uses correct VSEL; wrong value can drop CPU rail and hang right after "FAN53555 Detected!". */
@@ -1037,12 +989,6 @@
 	};
 };
 
-/* Redundant: already disabled in rk356x-base.dtsi.
- * Stock had a touch controller at 0x3d (Hynitron CST3xx). Miyoo Flip has no touchscreen. */
-&i2c3 {
-	status = "disabled";
-};
-
 /* I2S0_8ch (fe400000.i2s): used by HDMI sound card (card 0). rk817-sound uses I2S1_8ch (card 1). */
 &i2s0_8ch {
 	status = "okay";
@@ -1100,10 +1046,10 @@
 		};
 	};
 
-	/* Headphone jack detect (GPIO4_PC6). Used by simple-audio-card hp-det. */
+	/* Headphone jack detect (GPIO4_PC6). */
 	headphone {
 		hp_det: hp-det {
-			rockchip,pins = <4 RK_PC6 RK_FUNC_GPIO &pcfg_pull_down>;
+			rockchip,pins = <4 RK_PC6 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
 	};
 
@@ -1115,9 +1061,9 @@
 		};
 	};
 
-	/* Lid/hall sensor (GPIO0_PC6). SW_LID for gpio-keys. */
-	gpio-hall {
-		gpio_hall_l: gpio-hall-l {
+	/* Lid/hall sensor (GPIO0_PC6). SW_LID for gpio_keys_hall. */
+	hall-sensor {
+		hall_int_l: hall-int-l {
 			rockchip,pins = <0 RK_PC6 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
 	};
@@ -1185,6 +1131,7 @@
   */
 &pmu_io_domains {
 	status = "okay";
+	pmuio1-supply = <&vcc3v3_pmu>;
 	pmuio2-supply = <&vcc3v3_pmu>;
 	vccio1-supply = <&vccio_acodec>;
 	vccio3-supply = <&vccio_sd>;
@@ -1208,11 +1155,6 @@
 &saradc {
 	status = "okay";
 	vref-supply = <&vcc_1v8>;
-};
-
-/* Redundant: already disabled in rk356x-base.dtsi. No eMMC on this board. */
-&sdhci {
-	status = "disabled";
 };
 
 /* SD slot 0 (primary):
@@ -1381,11 +1323,6 @@
 	status = "disabled";
 };
 
-/* Redundant: already disabled in rk356x-base.dtsi */
-&usb_host0_ehci {
-	status = "disabled";
-};
-
 /* USB topology:
  *   usb_host0_xhci (fcc00000) = OTG port — peripheral mode (charging/gadget) via usb2phy0_otg
  *   usb_host1_xhci (fd000000) = Host DWC3 — USB2-only via usb2phy0_host
@@ -1419,26 +1356,6 @@
 	status = "okay";
 };
 
-/* Redundant: already disabled in rk356x-base.dtsi */
-&usb_host0_ohci {
-	status = "disabled";
-};
-
-/* Redundant: already disabled in rk356x-base.dtsi */
-&usb_host1_ohci {
-	status = "disabled";
-};
-
-/* Redundant: default okay in rk356x-base.dtsi */
-&vpu {
-	status = "okay";
-};
-
-/* Redundant: default okay in rk356x-base.dtsi */
-&vdpu_mmu {
-	status = "okay";
-};
-
 /* VEPU (H.264 encoder): works but disabled — retro gaming doesn't encode video. */
 &vepu {
 	status = "disabled";
@@ -1458,16 +1375,6 @@
 
 &vop_mmu {
 	status = "okay";
-};
-
-/* Redundant: already disabled in rk356x-base.dtsi. No USB3/SATA/PCIe on this board. */
-&combphy1 {
-	status = "disabled";
-};
-
-/* Redundant: already disabled in rk356x-base.dtsi */
-&combphy2 {
-	status = "disabled";
 };
 
 /* NPU (Neural Processing Unit) at 0xfdab0000.
