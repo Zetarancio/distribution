@@ -1,0 +1,15 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2026 ROCKNIX (https://github.com/ROCKNIX)
+# Miyoo Flip: prime rk817 Playback Mux at boot from jack state.
+
+mkdir -p /storage/.config/autostart
+cat <<'EOF' >/storage/.config/autostart/099-audio_prime
+#!/bin/sh
+case "$(grep 'Headphone detection' /sys/kernel/debug/gpio 2>/dev/null)" in
+  *' lo '*) MUX=HP ;;
+  *)        MUX=SPK ;;
+esac
+amixer -c 1 -q cset name='Playback Mux' "$MUX"
+EOF
+chmod 0755 /storage/.config/autostart/099-audio_prime
