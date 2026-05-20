@@ -7,5 +7,5 @@ cat <<EOF >/storage/.config/profile.d/010-led_control
 DEVICE_LED_CONTROL="true"
 DEVICE_LED_BRIGHTNESS="false"
 DEVICE_LED_CHARGING="true"
-DEVICE_BATTERY_LED_STATUS="true"
+DEVICE_BATTERY_LED_STATUS="false"
 EOF
