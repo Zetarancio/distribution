@@ -92,7 +92,7 @@ index 000000000000..111111111111
 +    dmc: dmc {
 +        compatible = "rockchip,rk3568-dmc";
 +        devfreq-events = <&dfi>;
-+        clocks = <&scmi_clk 2>;
++        clocks = <&scmi_clk 3>;
 +        clock-names = "dmc_clk";
 +        operating-points-v2 = <&dmc_opp_table>;
 +        center-supply = <&vdd_logic>;
