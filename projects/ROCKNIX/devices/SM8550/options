@@ -6,9 +6,8 @@
   # generated code.
     case ${TARGET_ARCH} in
       aarch64)
-        #TARGET_CPU="cortex-x3"
-        TARGET_CPU="cortex-a710"
-        TARGET_CPU_FLAGS="+fp16+crypto+i8mm+bf16+memtag+sm4+sha3+nosve"
+        TARGET_CPU="cortex-x3"
+        TARGET_CPU_FLAGS="+fp16+crypto+i8mm+bf16+memtag+sm4+sha3+nosve+nosve2"
         ;;
       arm)
         TARGET_KERNEL_ARCH="arm64"
@@ -64,7 +63,7 @@
     FIRMWARE=""
 
   # Additional packages to install
-    ADDITIONAL_PACKAGES="gamepadcalibration screen-switch rocknix-abl inputplumber"
+    ADDITIONAL_PACKAGES="gamepadcalibration rocknix-abl inputplumber"
 
   # Debug tty path
     DEBUG_TTY="/dev/ttyMSM0"

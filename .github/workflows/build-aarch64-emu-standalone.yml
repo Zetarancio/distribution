@@ -32,7 +32,7 @@ jobs:
       CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
     steps:
       - name: Maximize build space
-        uses: justinthelaw/maximize-github-runner-space@v0.7.0
+        uses: justinthelaw/maximize-github-runner-space@v0.9.0
         with:
           skip-components: docker-engine
 
@@ -97,6 +97,18 @@ jobs:
 
       - name: Clean up compressed aarch64 file
         run: rm build.build.aarch64.tar
+
+      - name: Download aarch64-rust (${{ inputs.DEVICE }})
+        uses: actions/download-artifact@v8
+        with:
+          name: aarch64-rust (${{ inputs.DEVICE }})
+
+      - name: Extract artifact aarch64-rust
+        run: |
+          tar --zstd -xf build.aarch64-rust.tar.zst
+
+      - name: Clean up compressed aarch64-rust file
+        run: rm build.aarch64-rust.tar.zst
 
       - name: Download qt6 (${{ inputs.DEVICE }})
         if: ${{ inputs.DEVICE == 'RK3399' || inputs.DEVICE == 'RK3566' || inputs.DEVICE == 'RK3576' || inputs.DEVICE == 'RK3588' ||

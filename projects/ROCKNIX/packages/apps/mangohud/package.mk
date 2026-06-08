@@ -27,7 +27,8 @@ pre_configure_target() {
                            -Dwith_x11=enabled \
                            -Dmangoplot=disabled \
                            -Dwith_wayland=enabled \
-                           -Dmangoapp=true"
+                           -Dmangoapp=true \
+                           -Dwith_fex=true"
 
   # Download Sub Modules
   mkdir -p ${PKG_BUILD}/subprojects/
@@ -91,6 +92,12 @@ post_makeinstall_target() {
 
       # No GPU temperature sensor or battery life estimate available
       sed -i 's/^gpu_temp/\# gpu_temp/g' ${INSTALL}/usr/config/MangoHud/MangoHud.conf
+      sed -i 's/^battery_time/\# battery_time/g' ${INSTALL}/usr/config/MangoHud/MangoHud.conf
+    ;;
+    SM8250)
+      sed -e "s/@FONT_SIZE@/40/g" -i ${INSTALL}/usr/config/MangoHud/MangoHud.conf
+      
+      # No battery life estimate available
       sed -i 's/^battery_time/\# battery_time/g' ${INSTALL}/usr/config/MangoHud/MangoHud.conf
     ;;
     *)
