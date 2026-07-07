@@ -2,7 +2,7 @@
 # Copyright (C) 2024-present ROCKNIX (https://github.com/ROCKNIX)
 
 PKG_NAME="emulationstation"
-PKG_VERSION="335d6b6604898d90f863871d944594c939374f94"
+PKG_VERSION="26ded87813e47f24a116923bdd1fc783ec796f04"
 PKG_GIT_CLONE_BRANCH="master"
 PKG_LICENSE="GPL"
 PKG_SITE="https://github.com/ROCKNIX/emulationstation-next"
@@ -111,7 +111,7 @@ EOF
   #Delete all vulkan options from es_features when vulkan is not present
   if [ ! "${VULKAN_SUPPORT}" = "yes" ]
     then
-      sed -i '/vulkan/d' ${INSTALL}/usr/config/emulationstation/es_features.cfg
+      xmlstarlet ed --inplace -d '//choice[contains(@name, "vulkan")]' ${INSTALL}/usr/config/emulationstation/es_features.cfg
   fi
 }
 

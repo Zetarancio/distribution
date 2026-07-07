@@ -31,11 +31,6 @@ matches:
       sys_path: /sys/firmware/devicetree/base
       attributes:
         - name: model
-          value: AYN Thor
-  - udev:
-      sys_path: /sys/firmware/devicetree/base
-      attributes:
-        - name: model
           value: Retroid Pocket 6
   - udev:
       sys_path: /sys/firmware/devicetree/base
@@ -57,6 +52,7 @@ source_devices:
 
   - group: gamepad
     evdev:
+      name: gpio-keys
       phys_path: gpio-keys/input0
       handler: event*
     capability_map_id: ayn_mcu

@@ -1,4 +1,4 @@
-name: Validate Commit
+name: Validate commit
 on:
   pull_request:
     branches: [next]
@@ -7,7 +7,7 @@ on:
     branches: [next]
 jobs:
   validate-commit:
-    runs-on: ubuntu-24.04
+    runs-on: self-hosted
     defaults:
       run:
         shell: bash
@@ -17,8 +17,24 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: actions/checkout@v6
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-      - name: Validate Commit Format
+      - name: Check for merge commits
+        if: github.event_name == 'pull_request'
+        run: |
+          MERGES=$(git log --merges --format='- %h %s' origin/${{ github.base_ref }}..HEAD)
+
+          if [ -n "$MERGES" ]; then
+            echo "--------------------------------------------------------"
+            echo "❌ This pull request contains merge commits."
+            echo
+            echo "The following merge commits were found:"
+            echo "$MERGES"
+            echo
+            echo "Please rebase your branch onto '${{ github.base_ref }}' and force-push the updated history."
+            exit 1
+          fi
+      - name: Validate commit format
         if: github.event_name == 'pull_request'
         run: |
           # Get the list of commit SHAs in the pull request
@@ -41,9 +57,9 @@ jobs:
 
             echo "Title: '$TITLE'"
 
-            # 1. Check Title Length (Max 50 characters)
-            if [ ${#TITLE} -gt 50 ]; then
-              echo "❌ ERROR: Title exceeds 50 characters (Length: ${#TITLE})."
+            # 1. Check Title Length (Max 72 characters)
+            if [ ${#TITLE} -gt 72 ]; then
+              echo "❌ ERROR: Title exceeds 72 characters (Length: ${#TITLE})."
               FAILED=1
             fi
 
@@ -73,7 +89,7 @@ jobs:
                   LONG_LINES=1
                 fi
               done <<< "$BODY"
-          
+
               if [ $LONG_LINES -eq 1 ]; then
                 echo "❌ ERROR: One or more lines in the body exceed 72 characters."
                 FAILED=1

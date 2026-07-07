@@ -9,7 +9,7 @@ PKG_LONGDESC="Dolphin is a GameCube / Wii / Triforce emulator, allowing you to p
 PKG_TOOLCHAIN="cmake"
 
 case ${DEVICE} in
-  SM6115|SM8250|SM8550|RK3399|SM8650|SM8750)
+  SM6115|SM8250|SM8550|RK3399|SM8650|SM8750|AMD64)
     PKG_VERSION="07aeb593211c7a427d81f0c29ec4a74783f1851e"
     PKG_DOLPHIN_VERSION_MAJOR="2603"
     PKG_DOLPHIN_VERSION_MINOR="1"
@@ -114,7 +114,7 @@ post_install() {
         DOLPHIN_BACKEND="\${DOLPHIN_BACKEND}"
         EXPORTS="if [ ! -z 'lsmod | grep panthor' ]; then LD_LIBRARY_PATH='\/usr\/lib\/libmali-valhall-g610-g13p0-x11-gbm.so' DOLPHIN_BACKEND='wayland'; else DOLPHIN_BACKEND='x11'; fi"
       ;;
-      SM6115|SM8250|SM8550|RK3399|SM8650|SM8750)
+      SM6115|SM8250|SM8550|RK3399|SM8650|SM8750|AMD64)
         DOLPHIN_BACKEND="x11"
         EXPORTS="export QT_QPA_PLATFORM=xcb"
       ;;
