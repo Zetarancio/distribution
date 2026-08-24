@@ -20,13 +20,18 @@ RUNTIME_DIR="${STEAM}/steam-runtime-steamrt-arm64"
 CLIENT_DIR="${STEAM}/steamrtarm64"
 PROTON_NAME="Proton 11.0 (ARM64)"
 PROTON_DIR="${STEAM}/steamapps/common/${PROTON_NAME}"
-RUNTIME_TAR_URL="https://repo.steampowered.com/steamrt3c/images/latest-public-beta/steam-runtime-steamrt-arm64.tar.xz"
+RUNTIME_TAR_BASE="https://repo.steampowered.com/steamrt3c/images"
+RUNTIME_TAR_VERSION_URL="${RUNTIME_TAR_BASE}/latest-public-stable.txt"
 STEAM_MANIFEST_URL="https://client-update.fastly.steamstatic.com/steam_client_publicbeta_linuxarm64"
 STEAM_CDN="https://client-update.steamstatic.com"
-PROTON_CACHYOS_VERSION_FULL="11.0-20260601-slr"
+PROTON_CACHYOS_VERSION_FULL="11.0-20260702-slr"
 PROTON_CACHYOS_TAR="proton-cachyos-${PROTON_CACHYOS_VERSION_FULL}-arm64.tar.xz"
 PROTON_CACHYOS_DIR="proton-cachyos-${PROTON_CACHYOS_VERSION_FULL}-arm64"
 PROTON_CACHYOS_URL="https://github.com/CachyOS/proton-cachyos/releases/download/cachyos-${PROTON_CACHYOS_VERSION_FULL}/${PROTON_CACHYOS_TAR}"
+PROTON_GE_VERSION_FULL="GE-Proton11-1"
+PROTON_GE_TAR="${PROTON_GE_VERSION_FULL}-aarch64.tar.gz"
+PROTON_GE_DIR="${PROTON_GE_VERSION_FULL}-aarch64"
+PROTON_GE_URL="https://github.com/GloriousEggroll/proton-ge-custom/releases/download/${PROTON_GE_VERSION_FULL}/${PROTON_GE_TAR}"
 unset MESA_LOADER_DRIVER_OVERRIDE
 
 # --- Logging & Error Handling Helpers ---
@@ -41,11 +46,23 @@ install_fex_config() {
 }
 
 ensure_fex_rootfs() {
-  if [ ! -f "${FEX_DATA}/RootFS/ArchLinux.sqsh" ]; then
+  rm -rf ${FEX_DATA}/RootFS/ArchLinux* || die "Failed to remove existing FEX RootFS."
+
+  if [ ! -d "${FEX_DATA}/RootFS/ArchLinux" ]; then
     log_info "FEX needs to download rootfs before starting Steam. This may take a while..."
     FEXRootFSFetcher --distro-name=arch --distro-version=rolling -y -x || die "Failed to fetch FEX RootFS."
+    rm -rf ${FEX_DATA}/RootFS/ArchLinux.sqsh || die "Failed to remove FEX RootFS sqsh."
   fi
-  cp -f "/usr/share/fex-emu/libvulkan_freedreno.so" "${FEX_ARCH_USR_LIB}" || die "Failed to copy libvulkan_freedreno.so."
+
+  cp -f "/usr/lib/liblsfg-vk-layer.so" "${FEX_ARCH_USR_LIB}"  || die "Failed to copy liblsfg-vk-layer.so."
+  cp -f "/usr/share/fex-emu/liblsfg-vk-layer-x86.so" "${FEX_ARCH_USR_LIB}"  || die "Failed to copy liblsfg-vk-layer-x86.so."
+  cp -f "/usr/share/vulkan/implicit_layer.d/VkLayer_LSFGVK_frame_generation.json" \
+     "${FEX_ARCH_ROOT}/usr/share/vulkan/implicit_layer.d/" || die "Failed to copy VkLayer_LSFGVK_frame_generation.json to ArchLinux rootfs."
+  cp -f "/usr/share/fex-emu/VkLayer_LSFGVK_frame_generation-x86.json" \
+     "${FEX_ARCH_ROOT}/usr/share/vulkan/implicit_layer.d/" || die "Failed to copy VkLayer_LSFGVK_frame_generation-x86.json to ArchLinux rootfs."
+  sed -i 's/"name": "VK_LAYER_LSFGVK_frame_generation"/"name": "VK_LAYER_LSFGVK_frame_generation_x86"/' "${FEX_ARCH_ROOT}/usr/share/vulkan/implicit_layer.d/VkLayer_LSFGVK_frame_generation-x86.json"
+  sed -i 's|"library_path": "/usr/lib/libvulkan_freedreno.so"|"library_path": "libvulkan_freedreno.so"|' \
+    ${FEX_ARCH_ROOT}/usr/share/vulkan/icd.d/freedreno_icd.x86_64.json
 }
 
 link_steam_library() {
@@ -70,6 +87,12 @@ install_steam_runtime_arm64() {
   fi
   log_info "Downloading and installing Steam runtime (ARM64)..."
   local tar_path="${STEAM}/steam-runtime-steamrt-arm64.tar.xz"
+
+  local runtime_version
+  runtime_version=$(curl -fsSL "${RUNTIME_TAR_VERSION_URL}" | tr -d '[:space:]') || die "Failed to fetch Steam runtime version."
+  [ -n "${runtime_version}" ] || die "Steam runtime version string is empty."
+  local RUNTIME_TAR_URL="${RUNTIME_TAR_BASE}/${runtime_version}/steam-runtime-steamrt-arm64.tar.xz"
+  log_info "Steam runtime URL: ${RUNTIME_TAR_URL}"
 
   wget -c -t 5 -O "${tar_path}" "${RUNTIME_TAR_URL}" || die "Failed to download Steam runtime."
   tar xvf "${tar_path}" -C "${STEAM}" || die "Failed to extract Steam runtime."
@@ -108,65 +131,79 @@ install_steam_client_arm64() {
   mkdir -p "${STEAM_DOT}"
   ln -sfn "${STEAM}" "${STEAM_DOT}/steam" || die "Failed to symlink STEAM_DOT/steam."
   ln -sfn "${STEAM}/linuxarm64" "${STEAM_DOT}/sdkarm64" || die "Failed to symlink STEAM_DOT/sdkarm64."
-
   mkdir -p "${STEAM}/compatibilitytools.d/"
-  ln -sfn "${PROTON_DIR}/" "${STEAM}/compatibilitytools.d/Proton11ARM" || die "Failed to symlink Proton11ARM."
-  cp -f "/usr/share/steam/compatibilitytool.vdf" "${STEAM}/compatibilitytools.d/" || die "Failed to copy compatibilitytool.vdf."
 }
 
 install_bundled_proton_files() {
   log_info "Installing bundled Proton files..."
   mkdir -p "${STEAM_DOT}" "${PROTON_DIR}/"
-  cp -f "/usr/share/steam/toolmanifest.vdf" "${PROTON_DIR}/" || die "Failed to copy toolmanifest.vdf."
   cp -f "/usr/share/steam/registry.vdf" "${STEAM_DOT}" || die "Failed to copy registry.vdf."
 }
 
-install_proton_cachyos() {
-  local url="$PROTON_CACHYOS_URL"
+install_proton_variant() {
+  local display_name="$1"
+  local url="$2"
+  local tar_name="$3"
+  local dir_name="$4"
+  local cleanup_glob="$5"
+
   local dest_dir="${STEAM}/compatibilitytools.d"
-  local tar_path="${dest_dir}/${PROTON_CACHYOS_TAR}"
-  local extracted_dir="${dest_dir}/${PROTON_CACHYOS_DIR}"
+  local tar_path="${dest_dir}/${tar_name}"
+  local extracted_dir="${dest_dir}/${dir_name}"
   local manifest_file="${extracted_dir}/toolmanifest.vdf"
 
   if [ -d "${dest_dir}" ]; then
-    for old_dir in "${dest_dir}"/proton-cachyos-*-arm64; do
+    for old_dir in "${dest_dir}"/${cleanup_glob}; do
       [ -d "${old_dir}" ] || continue
       if [ "${old_dir}" != "${extracted_dir}" ]; then
-        log_info "Removing old Proton-CachyOS: $(basename "${old_dir}")"
+        log_info "Removing old ${display_name}: $(basename "${old_dir}")"
         rm -rf "${old_dir}"
       fi
     done
   fi
 
   if [ -d "${extracted_dir}" ]; then
-    log_info "Proton-CachyOS already installed. Skipping download."
+    log_info "${display_name} already installed. Skipping download."
     return 0
   fi
 
-  log_info "Downloading and installing Proton-CachyOS..."
+  log_info "Downloading and installing ${display_name}..."
   mkdir -p "${dest_dir}"
-  wget -c -t 5 -O "${tar_path}" "$url" || die "Failed to download Proton-CachyOS."
-  tar -xvf "${tar_path}" -C "${dest_dir}" || die "Failed to extract Proton-CachyOS."
+  wget -c -t 5 -O "${tar_path}" "$url" || die "Failed to download ${display_name}."
+  tar -xvf "${tar_path}" -C "${dest_dir}" || die "Failed to extract ${display_name}."
   rm -f "${tar_path}"
+}
 
-  if [ -f "${manifest_file}" ]; then
-    sed -i '/require_tool_appid/d' "${manifest_file}" || die "Failed to patch toolmanifest.vdf."
-  fi
+install_proton_cachyos() {
+  install_proton_variant \
+    "Proton-CachyOS" \
+    "${PROTON_CACHYOS_URL}" \
+    "${PROTON_CACHYOS_TAR}" \
+    "${PROTON_CACHYOS_DIR}" \
+    "proton-cachyos-*-arm64"
+}
+
+install_proton_ge() {
+  install_proton_variant \
+    "Proton-GE" \
+    "${PROTON_GE_URL}" \
+    "${PROTON_GE_TAR}" \
+    "${PROTON_GE_DIR}" \
+    "GE-Proton*-aarch64"
 }
 
 run_steam_first_launch() {
   log_info "Running Steam first launch routine..."
-  echo 0 > /proc/sys/fs/binfmt_misc/x86_64 || true
   echo 0 > /proc/sys/fs/binfmt_misc/x86 || true
+  echo 0 > /proc/sys/fs/binfmt_misc/box32 || true
+  echo 0 > /proc/sys/fs/binfmt_misc/box64 || true
 
   if [ "${DEVICE_HAS_DUAL_SCREEN}" = "true" ]; then
     swaymsg 'seat seat1 fallback true' || log_info "Swaymsg dual screen setup failed, ignoring."
   fi
 
-  # Allow FEX / Steam launch commands to fail cleanly if needed, though they shouldn't
-  FEX /usr/bin/steam -steamdeck -exitsteam || log_info "First FEX execution exited with an error."
-  FEX /usr/bin/steam -steamdeck -exitsteam || log_info "Second FEX execution exited with an error."
-  LD_LIBRARY_PATH="${STEAM}/lib/aarch64-linux-gnu/" "${CLIENT_DIR}/steam" -steamdeck -exitsteam || log_info "Native Steam execution exited with an error."
+  # Allow Steam launch commands to fail cleanly if needed, though they shouldn't
+  LD_LIBRARY_PATH="${STEAM}/lib/aarch64-linux-gnu/" "${CLIENT_DIR}/steam" -deckard -exitsteam || log_info "Native Steam execution exited with an error."
 
   if [ "${DEVICE_HAS_DUAL_SCREEN}" = "true" ]; then
     swaymsg 'seat seat1 fallback false' || log_info "Swaymsg dual screen teardown failed, ignoring."
@@ -186,6 +223,7 @@ install_steam_runtime_arm64
 install_steam_client_arm64
 install_bundled_proton_files
 install_proton_cachyos
+install_proton_ge
 run_steam_first_launch
 
 echo ""

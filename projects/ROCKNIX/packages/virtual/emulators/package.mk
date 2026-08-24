@@ -24,7 +24,7 @@ LIBRETRO_CORES="81-lr a5200-lr arduous-lr atari800-lr b2-lr beetle-gba-lr beetle
                 geolith-lr genesis-plus-gx-lr genesis-plus-gx-wide-lr gw-lr handy-lr hatari-lr idtech-lr jaxe-lr mame-lr                \
                 mame2003-plus-lr mame2010-lr mame2015-lr melonds-lr melonds-ds-lr mesen-lr mesen-s-lr mgba-lr minivmac-lr mojozork-lr   \
                 mu-lr mupen64plus-lr mupen64plus-nx-lr neocd_lr nestopia-lr np2kai-lr o2em-lr opera-lr parallel-n64-lr pcsx_rearmed-lr  \
-                picodrive-lr pokemini-lr potator-lr prosystem-lr puae-lr puae2021-lr px68k-lr quasi88-lr quicknes-lr race-lr  \
+                picodrive-lr pokemini-lr potator-lr prboom-lr prosystem-lr puae-lr puae2021-lr px68k-lr quasi88-lr quicknes-lr race-lr  \
                 same_cdi-lr sameboy-lr sameduck-lr scummvm-lr skyemu-lr smsplus-gx-lr snes9x-lr snes9x2002-lr snes9x2005_plus-lr        \
                 snes9x2010-lr stella-lr supersnes9x-lr swanstation-lr tgbdual-lr theodore-lr tic80-lr uae4arm uzem-lr vba-next-lr       \
                 vbam-lr vecx-lr vice-lr vircon32-lr virtualjaguar-lr xmil-lr wasm4-lr yabasanshiro-lr"
@@ -53,36 +53,41 @@ case "${DEVICE}" in
     PKG_EMUS+=" aethersx2-sa azahar-sa dolphin-sa drastic-sa mednafen melonds-sa vita3k-sa"
     LIBRETRO_CORES+=" dolphin-lr"
     ;;
-  RK3588|SM6115)
+  RK3588)
     [ "${ENABLE_32BIT}" == "true" ] && EMUS_32BIT="box86 desmume-lr gpsp-lr pcsx_rearmed-lr"
     PKG_EMUS+=" aethersx2-sa azahar-sa dolphin-sa drastic-sa mednafen melonds-sa supermodel-sa vita3k-sa"
+    LIBRETRO_CORES+=" beetle-psx-lr beetle-saturn-lr bsnes-lr bsnes-hd-lr dolphin-lr"
+    ;;
+  SM6115)
+    [ "${ENABLE_32BIT}" == "true" ] && EMUS_32BIT="box86 desmume-lr gpsp-lr pcsx_rearmed-lr"
+    PKG_EMUS+=" aethersx2-sa azahar-sa dolphin-sa drastic-sa mednafen melonds-sa supermodel-sa vita3k-sa armsx2-sa"
     LIBRETRO_CORES+=" beetle-psx-lr beetle-saturn-lr bsnes-lr bsnes-hd-lr dolphin-lr"
     ;;
   SM8250)
     [ "${ENABLE_32BIT}" == "true" ] && EMUS_32BIT="box86 daedalusx64-sa desmume-lr gpsp-lr pcsx_rearmed-lr"
     PKG_EMUS+=" aethersx2-sa azahar-sa bigpemu-sa cemu-sa dolphin-sa heroic mednafen melonds-sa nanoboyadvance-sa rpcs3-sa supermodel-sa \
-                xemu-sa skyemu-sa steam vita3k-sa yaps2-sa"
+                xemu-sa skyemu-sa steam vita3k-sa armsx2-sa"
     LIBRETRO_CORES+=" beetle-psx-lr beetle-saturn-lr bsnes-lr bsnes-hd-lr dolphin-lr kronos-lr"
     ;;
   SM8550)
     [ "${ENABLE_32BIT}" == "true" ] && EMUS_32BIT="box86 daedalusx64-sa desmume-lr gpsp-lr pcsx_rearmed-lr"
     PKG_EMUS+=" aethersx2-sa ares-sa azahar-sa bigpemu-sa cemu-sa dolphin-sa drastic-sa gopher64-sa heroic mednafen melonds-sa nanoboyadvance-sa rpcs3-sa supermodel-sa \
-                xemu-sa skyemu-sa steam vita3k-sa yaps2-sa"
+                xemu-sa skyemu-sa steam vita3k-sa armsx2-sa"
     LIBRETRO_CORES+=" beetle-psx-lr beetle-saturn-lr bsnes-lr bsnes-hd-lr dolphin-lr kronos-lr"
     ;;
   SM8650|SM8750)
     PKG_EMUS+=" aethersx2-sa ares-sa azahar-sa bigpemu-sa cemu-sa dolphin-sa gopher64-sa heroic mednafen melonds-sa nanoboyadvance-sa rpcs3-sa supermodel-sa \
-                xemu-sa skyemu-sa steam vita3k-sa yaps2-sa"
+                xemu-sa skyemu-sa steam vita3k-sa armsx2-sa"
     LIBRETRO_CORES+=" beetle-psx-lr beetle-saturn-lr bsnes-lr bsnes-hd-lr dolphin-lr kronos-lr"
     ;;
   S922X)
     [ "${ENABLE_32BIT}" == "true" ] && EMUS_32BIT="box86 pcsx_rearmed-lr"
-    PKG_EMUS+=" aethersx2-sa azahar-sa dolphin-sa drastic-sa duckstation-sa melonds-sa vita3k-sa"
+    PKG_EMUS+=" aethersx2-sa azahar-sa dolphin-sa drastic-sa duckstation-sa melonds-sa vita3k-sa armsx2-sa"
     LIBRETRO_CORES+=" beetle-psx-lr beetle-saturn-lr bsnes-lr bsnes-hd-lr dolphin-lr"
     ;;
   AMD64)
     PKG_EMUS+=" ares-sa azahar-sa cemu-sa dolphin-sa gopher64-sa mednafen melonds-sa nanoboyadvance-sa \
-                xemu-sa skyemu-sa vita3k-sa yaps2-sa"
+                xemu-sa skyemu-sa vita3k-sa armsx2-sa"
     LIBRETRO_CORES+=" beetle-psx-lr beetle-saturn-lr bsnes-lr bsnes-hd-lr dolphin-lr"
 esac
 
@@ -631,16 +636,11 @@ makeinstall_target() {
 
   ### Nintendo GameCube
   case ${DEVICE} in
-    RK3399|SM6115|SM8250|SM8550|SM8650|SM8750|AMD64)
-      add_emu_core gamecube dolphin dolphin-qt-gc true
-      add_emu_core gamecube dolphin dolphin-sa-gc false
+    RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750|S922X|AMD64)
+      add_emu_core gamecube dolphin dolphin-sa-gc true
+      add_emu_core gamecube dolphin dolphin-qt-gc false
       add_emu_core gamecube retroarch dolphin false
       install_script "Start Dolphin.sh"
-      add_es_system gamecube
-      ;;
-    RK3576|RK3566|RK3588|S922X)
-      add_emu_core gamecube dolphin dolphin-sa-gc true
-      add_emu_core gamecube retroarch dolphin false
       add_es_system gamecube
       ;;
   esac
@@ -648,7 +648,8 @@ makeinstall_target() {
   ### Nintendo Triforce
   case ${DEVICE} in
     RK3399|SM6115|SM8250|SM8550|SM8650|SM8750|AMD64)
-      add_emu_core triforce dolphin dolphin-qt-gc true
+      add_emu_core triforce dolphin dolphin-sa-gc true
+      add_emu_core triforce dolphin dolphin-qt-gc false
       install_script "Start Dolphin.sh"
       add_es_system triforce
       ;;
@@ -656,19 +657,11 @@ makeinstall_target() {
 
   ### Nintendo Wii/ware
   case ${DEVICE} in
-    RK3399|SM6115|SM8250|SM8550|SM8650|SM8750|AMD64)
-      add_emu_core wii dolphin dolphin-qt-wii true
-      add_emu_core wiiware dolphin dolphin-qt-wii true
-      add_emu_core wii dolphin dolphin-sa-wii false
-      add_emu_core wiiware dolphin dolphin-sa-wii false
-      add_emu_core wii retroarch dolphin false
-      add_emu_core wiiware retroarch dolphin false
-      add_es_system wii
-      add_es_system wiiware
-      ;;
-    RK3576|RK3566|RK3588|S922X)
+    RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750|S922X|AMD64)
       add_emu_core wii dolphin dolphin-sa-wii true
       add_emu_core wiiware dolphin dolphin-sa-wii true
+      add_emu_core wii dolphin dolphin-qt-wii false
+      add_emu_core wiiware dolphin dolphin-qt-wii false
       add_emu_core wii retroarch dolphin false
       add_emu_core wiiware retroarch dolphin false
       add_es_system wii
@@ -1164,16 +1157,16 @@ makeinstall_target() {
   ### Sony Playstation 2
   case ${DEVICE} in
   AMD64)
-    add_emu_core ps2 yaps2 yaps2-sa true
-    install_script "Start YAPS2.sh"
+    add_emu_core ps2 armsx2 armsx2-sa true
+    install_script "Start ARMSX2.sh"
     add_es_system ps2
     ;;
   RK3399|RK3576|RK3566|RK3588|SM6115|SM8250|SM8550|SM8650|SM8750|S922X)
     add_emu_core ps2 aethersx2 aethersx2-sa true
     case ${DEVICE} in
-      SM8250|SM8550|SM8650|SM8750)
-        add_emu_core ps2 yaps2 yaps2-sa false
-        install_script "Start YAPS2.sh"
+      S922X|SM6115|SM8250|SM8550|SM8650|SM8750)
+        add_emu_core ps2 armsx2 armsx2-sa false
+        install_script "Start ARMSX2.sh"
       ;;
     esac
     add_es_system ps2
@@ -1656,6 +1649,7 @@ makeinstall_target() {
 
   ### Doom
   add_emu_core doom gzdoom gzdoom-sa true
+  add_emu_core doom retroarch prboom false
   add_es_system doom
 
   ### Media Player

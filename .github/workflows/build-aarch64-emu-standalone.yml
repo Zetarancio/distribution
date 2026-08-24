@@ -21,6 +21,7 @@ jobs:
       ENABLE_32BIT: no
       TARGET_TYPE: emus_only
       JAVA_HOME: /usr
+      AUTOREMOVE: "yes"
       PROJECT: ${{ inputs.PROJECT }}
       DEVICE: ${{ inputs.DEVICE }}
       ARCH: aarch64
@@ -65,6 +66,18 @@ jobs:
           cat ${PREFIX}* > ccache.tar
           tar -xf ccache.tar || { echo "Extract failed"; exit 0; }
           rm -f ${PREFIX}* ccache.tar
+
+      - name: Download aarch64-toolchain (${{ inputs.DEVICE }})
+        uses: actions/download-artifact@v8
+        with:
+          name: aarch64-toolchain (${{ inputs.DEVICE }})
+
+      - name: Extract artifact aarch64-toolchain
+        run: |
+          tar --zstd -xf build.aarch64-toolchain.tar.zst
+
+      - name: Clean up compressed aarch64-toolchain file
+        run: rm build.aarch64-toolchain.tar.zst
 
       - name: Download aarch64 (${{ inputs.DEVICE }})
         uses: actions/download-artifact@v8
@@ -125,7 +138,7 @@ jobs:
 
       - name: Clean up compressed qt6 file
         if: ${{ inputs.DEVICE == 'RK3399' || inputs.DEVICE == 'RK3566' || inputs.DEVICE == 'RK3576' || inputs.DEVICE == 'RK3588' ||
-          inputs.DEVICE == 'S922X'  || inputs.DEVICE == 'SM8250' || inputs.DEVICE == 'SM8550' || inputs.DEVICE == 'SM8650' || inputs.DEVICE == 'SM6115' }}
+          inputs.DEVICE == 'S922X'  || inputs.DEVICE == 'SM8250' || inputs.DEVICE == 'SM8550' || inputs.DEVICE == 'SM8650' || inputs.DEVICE == 'SM8750' || inputs.DEVICE == 'SM6115' }}
         run: rm build.qt6.tar.zst
 
       - name: Build
@@ -155,6 +168,7 @@ jobs:
           export CCACHE_DIR=./build.ROCKNIX-${{ inputs.DEVICE }}.aarch64/.ccache
           ./build.ROCKNIX-${{ inputs.DEVICE }}.aarch64/toolchain/bin/ccache -s -v
           ./build.ROCKNIX-${{ inputs.DEVICE }}.aarch64/toolchain/bin/ccache -M 4.5G
+          ./build.ROCKNIX-${{ inputs.DEVICE }}.aarch64/toolchain/bin/ccache -c
           ./build.ROCKNIX-${{ inputs.DEVICE }}.aarch64/toolchain/bin/ccache -c
           ./build.ROCKNIX-${{ inputs.DEVICE }}.aarch64/toolchain/bin/ccache -s -v
           ./build.ROCKNIX-${{ inputs.DEVICE }}.aarch64/toolchain/bin/ccache -z

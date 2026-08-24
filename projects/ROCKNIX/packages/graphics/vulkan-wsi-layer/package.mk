@@ -7,6 +7,7 @@ PKG_LICENSE="MIT"
 PKG_SITE="https://gitlab.freedesktop.org/mesa/vulkan-wsi-layer"
 PKG_URL="${PKG_SITE}/-/archive/${PKG_VERSION}.tar.gz"
 PKG_DEPENDS_TARGET="toolchain libdrm wayland-protocols ${VULKAN}"
+PKG_DEPENDS_UNPACK="linux"
 PKG_LONGDESC="Implements Vulkan extensions for Window System Integration inside a Vulkan layer."
 PKG_TOOLCHAIN="cmake"
 
@@ -35,7 +36,9 @@ PKG_CMAKE_OPTS_TARGET+=" -DVULKAN_CXX_INCLUDE=${SYSROOT_PREFIX}/usr \
 }
 
 makeinstall_target() {
+  # Install to arch libdirs using a bare soname manifest.
+  mkdir -p ${INSTALL}/usr/lib
+  cp -r ${PKG_BUILD}/.${TARGET_NAME}/libVkLayer_window_system_integration.so ${INSTALL}/usr/lib/
   mkdir -p ${INSTALL}/usr/share/vulkan/implicit_layer.d
-  cp -r ${PKG_BUILD}/.${TARGET_NAME}/libVkLayer_window_system_integration.so ${INSTALL}/usr/share/vulkan/
   cp -r ${PKG_BUILD}/.${TARGET_NAME}/VkLayer_window_system_integration.json ${INSTALL}/usr/share/vulkan/implicit_layer.d
 }
