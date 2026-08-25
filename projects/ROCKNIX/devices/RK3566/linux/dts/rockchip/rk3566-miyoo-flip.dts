@@ -959,8 +959,7 @@
 				};
 			};
 
-		/* OTG_SWITCH: PMIC gate for 5V on OTG port. Required for correct OTG
-		 * power sequencing on some boards; charger/OTG driver may reference it. */
+		/* OTG_SWITCH: RK817 OTG 5V output. Not the upper USB-C VBUS. */
 		otg_switch: OTG_SWITCH {
 			regulator-name = "otg_switch";
 			regulator-state-mem {
@@ -1291,16 +1290,13 @@
 	status = "okay";
 };
 
-/* USB2 PHY0 host: PHY analog supply.
- * Stock uses phy-supply → vcc5v0_host → dcdc_boost (5V step-up always-on).
- * Nothing on this PHY needs 5V VBUS; use vcc_3v3 to avoid holding dcdc_boost
- * enabled at idle.  Restore vcc5v0_host if a USB-A port is routed here. */
+/* USB2 PHY0 host: analog 3.3 V only; no external connector. */
 &usb2phy0_host {
 	phy-supply = <&vcc_3v3>;
 	status = "okay";
 };
 
-/* USB2 PHY0 OTG: charging and USB gadget (peripheral). */
+/* USB2 PHY0 OTG: lower USB-C (charge / gadget). No VBUS supply. */
 &usb2phy0_otg {
 	status = "okay";
 };
@@ -1316,34 +1312,35 @@
 	status = "okay";
 };
 
-/* usb2phy1_otg: PHY for usb_host0_ehci/ohci (fd800000/fd840000).
- * Nothing physically routed. Stock enables these but their suspend
- * callbacks hang on mainline 6.18 (confirmed by unbind test). */
+/* USB2 PHY1 OTG: upper USB-C host. VBUS via vcc5v0_host (GPIO4_PC5). */
 &usb2phy1_otg {
-	status = "disabled";
+	phy-supply = <&vcc5v0_host>;
+	status = "okay";
 };
 
-/* USB topology:
- *   usb_host0_xhci (fcc00000) = OTG port — peripheral mode (charging/gadget) via usb2phy0_otg
- *   usb_host1_xhci (fd000000) = Host DWC3 — USB2-only via usb2phy0_host
- *   usb_host1_ehci  (fd880000) = USB2 EHCI host via usb2phy1_host — WiFi (RTL8733BU) lives here
- *
- * Disabled (suspend callbacks hang on mainline 6.18, confirmed by unbind test):
- *   usb_host0_ehci/ohci (fd800000/fd840000) — nothing physically routed
- *   usb_host1_ohci (fd8c0000) — OHCI companion to WiFi EHCI, not needed
- *
- * usb_host1_xhci uses usb2phy0_host (not usb2phy1_host) to avoid sharing
- * a PHY with usb_host1_ehci where WiFi is wired. */
+&usb_host0_ehci {
+	status = "okay";
+};
 
-/* OTG port: peripheral-only mode (charging + USB gadget). */
+/* USB:
+ *   fcc00000 usb_host0_xhci  lower USB-C charge/gadget (usb2phy0_otg)
+ *   fd800000 usb_host0_ehci  upper USB-C host (usb2phy1_otg, VBUS vcc5v0_host)
+ *   fd880000 usb_host1_ehci  WiFi RTL8733BU (usb2phy1_host)
+ *   fd000000 usb_host1_xhci  unused (usb2phy0_host)
+ *
+ * Disabled: fd840000 / fd8c0000 OHCI companions.
+ * usb_host1_xhci stays on usb2phy0_host so it does not share a PHY with WiFi. */
+
+/* Lower USB-C: charge / gadget. */
 &usb_host0_xhci {
 	status = "okay";
-	dr_mode = "peripheral";
+	dr_mode = "otg";
+	extcon = <&usb2phy0>;
 	phys = <&usb2phy0_otg>;
 	phy-names = "usb2-phy";
 };
 
-/* Host DWC3: usb2phy0_host (its default PHY), USB2-only since no USB3 routing. */
+/* Host DWC3: usb2phy0_host, USB2-only (no USB3 routing). */
 &usb_host1_xhci {
 	status = "okay";
 	phys = <&usb2phy0_host>;
