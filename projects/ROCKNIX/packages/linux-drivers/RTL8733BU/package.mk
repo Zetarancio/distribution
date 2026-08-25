@@ -2,11 +2,17 @@
 # Copyright (C) 2024-present ROCKNIX (https://github.com/ROCKNIX)
 
 PKG_NAME="RTL8733BU"
-PKG_VERSION="308919f005f439de433aac977f925bb57f59acf4"
+# Pinned one commit before the branch tip on purpose. RK3566 builds Linux 7.0.2
+# (projects/ROCKNIX/packages/linux/package.mk), and tip commit 6821d54 rewires
+# cfg80211_ops to wireless_dev-based wrappers for the 7.1 MLO signature change,
+# which will not compile against 7.0.2. This commit already carries the static
+# Kbuild and the Kconfig USB/CFG80211 fix, and still uses the net_device ops
+# that 7.0.2 expects. Move to the tip only when the device moves to 7.1.
+PKG_VERSION="c46aa25e237cb43f33390cf58eee5c69d9b32883"
 PKG_LICENSE="GPL"
-PKG_SITE="https://github.com/wirenboard/rtl8733bu"
-PKG_URL="https://github.com/ROCKNIX/RTL8733BU/archive/${PKG_VERSION}.tar.gz"
-PKG_LONGDESC="RTL8733BU driver"
+PKG_SITE="https://github.com/Awesome-Embedded-Learning-Studio/rtl8733bu-linux-driver"
+PKG_URL="${PKG_SITE}/archive/${PKG_VERSION}.tar.gz"
+PKG_LONGDESC="RTL8733BU driver (wirenboard base, in-tree Kbuild port)"
 PKG_TOOLCHAIN="make"
 PKG_IS_KERNEL_PKG="yes"
 
@@ -14,19 +20,12 @@ pre_make_target() {
   unset LDFLAGS
 }
 
+# This fork replaces the upstream 2803-line multi-chip Makefile with a static
+# Kbuild whose only entry point is obj-$(CONFIG_RTL8733BU) += 8733bu.o, so the
+# build has to go through the kernel's own module path with that symbol set.
+# Chip options now live in the fork's ccflags-y rather than in make variables.
 make_target() {
-  make V=1 \
-       ARCH=${TARGET_KERNEL_ARCH} \
-       KSRC=$(kernel_path) \
-       CROSS_COMPILE=${TARGET_KERNEL_PREFIX} \
-       CONFIG_POWER_SAVING=y \
-       CONFIG_IPS_MODE=1 \
-       CONFIG_LPS_MODE=1 \
-       CONFIG_USB_AUTOSUSPEND=n \
-       CONFIG_WOWLAN=n \
-       CONFIG_MP_INCLUDED=n \
-       CONFIG_P2P=n \
-       CONFIG_TDLS=n
+  kernel_make -C $(kernel_path) M=${PKG_BUILD} CONFIG_RTL8733BU=m modules
 }
 
 makeinstall_target() {
