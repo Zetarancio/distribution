@@ -14,6 +14,22 @@ When SYS_CAN_SD is left set the charger monitoring circuitry remains
 active after system-off, drawing ~8 mA from the battery.  Clearing the
 single bit drops off-state drain to ~0.05 mA, matching stock firmware.
 
+The bit could equally be cleared from U-Boot, in rk817_init_reg[] in
+drivers/power/pmic/rk8xx.c, which today writes only BUCK4_CMIN.  The
+kernel was chosen for three reasons: it is where the BSP does it, from
+rk817_charge_sys_can_sd_disable() via rk817_charge_pre_init(); it keeps
+the fix independent of which bootloader happens to be in SPI, which
+matters on a board that can boot a stock preloader from SPI ahead of our
+own U-Boot from SD; and it fixes every RK817 board rather than only the
+configurations we build a bootloader for.
+
+Worth recording that no bootloader in this chain clears it today, since
+that is easy to assume and wrong.  Measured at the U-Boot prompt after a
+genuine power-on reset (battery physically disconnected, so the PMIC
+registers really did return to defaults) with the stock 2017.09 SPL in
+the boot chain: 0xe6 reads 0xc5, bit 7 set.  Both the stock SPL and
+ROCKNIX U-Boot leave it that way and hand it to the kernel.
+
 Signed-off-by: Zetarancio <zetarancio@users.noreply.github.com>
 ---
  drivers/power/supply/rk817_charger.c | 10 ++++++++++
