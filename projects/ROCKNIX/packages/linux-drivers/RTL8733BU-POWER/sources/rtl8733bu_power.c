@@ -164,20 +164,19 @@ static void rtl8733bu_power_shutdown(struct platform_device *pdev)
 }
 
 /*
- * Cut chip power for suspend, so the userspace sleep hook is not the only
- * thing doing it.
+ * Cut chip power for suspend.
  *
  * This has to be the late phase.  Two earlier points look plausible and are
  * both wrong:
  *
- *   PM_SUSPEND_PREPARE, via a PM notifier, matches when the userspace hook
- *   runs but not what it does.  The hook powers the chip down *through*
- *   rfkill, so the BT stack closes the HCI device while the chip is still
- *   alive.  Dropping the GPIO directly at PREPARE instead kills the chip
- *   underneath that close: hci_dev_close_sync() then sits in drain_workqueue()
- *   waiting on work the dead device will never complete, the rfkill task never
- *   freezes, and the suspend aborts with "Freezing user space processes failed
- *   ... tasks refusing to freeze".  It is a race, so it survives some cycles.
+ *   PM_SUSPEND_PREPARE, via a PM notifier, still runs with user space thawed,
+ *   so it can land in the middle of the BT stack closing the HCI device --
+ *   sleep.sh stops bluetooth.service on the way down, which blocks BT rfkill.
+ *   Dropping the GPIO there kills the chip underneath that close:
+ *   hci_dev_close_sync() then sits in drain_workqueue() waiting on work the
+ *   dead device will never complete, the rfkill task never freezes, and the
+ *   suspend aborts with "Freezing user space processes failed ... tasks
+ *   refusing to freeze".  It is a race, so it survives some cycles.
  *
  *   dev_pm_ops.suspend fires inside dpm_suspend() and this platform device has
  *   no ordering relationship to the USB controller, so it can yank a USB
