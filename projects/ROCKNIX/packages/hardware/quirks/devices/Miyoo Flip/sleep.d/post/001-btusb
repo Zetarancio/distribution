@@ -3,9 +3,12 @@
 # Copyright (C) 2025 ROCKNIX (https://github.com/ROCKNIX)
 
 # RTL8733BU combo chip: sync WiFi and BT rfkill state to settings after resume.
-# The rtl8733bu-power driver's resume hook re-applies GPIO based on its rfkill
-# state; sleep.sh itself handles start/stop of bluetooth.service and wifictl,
-# so this quirk only needs to make sure rfkill matches the user intent.
+# The rtl8733bu-power driver cuts chip power in its suspend_late callback and
+# re-applies GPIO from rfkill state on resume; sleep.sh itself handles
+# start/stop of bluetooth.service and wifictl, so this quirk only needs to make
+# sure rfkill matches the user intent. There is no matching pre hook: powering
+# the chip down for suspend is the driver's job now, and doing it from here as
+# well used to be what kept the chip alive for it.
 # btusb stays loaded — GPIO-off handles USB disconnect; GPIO-on handles probe.
 # Note: BT connections (e.g. headphones) drop during sleep when the chip
 # powers off; the stack may auto-reconnect.

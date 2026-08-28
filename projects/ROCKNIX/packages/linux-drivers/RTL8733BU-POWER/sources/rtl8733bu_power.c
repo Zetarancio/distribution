@@ -21,6 +21,10 @@
  *
  * After turning power on (and on resume), we wait 100 ms before returning
  * so the chip is stable before USB enumerates.
+ *
+ * Power for suspend is dropped by the driver rather than left to userspace;
+ * see the comment above rtl8733bu_power_suspend_late() for why it has to be
+ * the late phase.
  */
 
 #include <linux/delay.h>
@@ -159,6 +163,47 @@ static void rtl8733bu_power_shutdown(struct platform_device *pdev)
 	gpiod_set_value_cansleep(power->enable_gpio, 0);
 }
 
+/*
+ * Cut chip power for suspend, so the userspace sleep hook is not the only
+ * thing doing it.
+ *
+ * This has to be the late phase.  Two earlier points look plausible and are
+ * both wrong:
+ *
+ *   PM_SUSPEND_PREPARE, via a PM notifier, matches when the userspace hook
+ *   runs but not what it does.  The hook powers the chip down *through*
+ *   rfkill, so the BT stack closes the HCI device while the chip is still
+ *   alive.  Dropping the GPIO directly at PREPARE instead kills the chip
+ *   underneath that close: hci_dev_close_sync() then sits in drain_workqueue()
+ *   waiting on work the dead device will never complete, the rfkill task never
+ *   freezes, and the suspend aborts with "Freezing user space processes failed
+ *   ... tasks refusing to freeze".  It is a race, so it survives some cycles.
+ *
+ *   dev_pm_ops.suspend fires inside dpm_suspend() and this platform device has
+ *   no ordering relationship to the USB controller, so it can yank a USB
+ *   device mid-suspend.
+ *
+ * By .suspend_late, user space is frozen (nothing can issue a new rfkill or
+ * HCI request) and every .suspend callback has run, including those of the USB
+ * devices on this chip.  Nothing is left waiting on it, so cutting power is
+ * safe.  No settle delay is needed either: the disconnect is not processed
+ * until resume, when the chip re-enumerates anyway.
+ *
+ * The cut is unconditional, unlike update_gpio(), which keeps power on while
+ * either rfkill is unblocked.  That is fine because .resume restores the GPIO
+ * from the rfkill state, which this path does not modify.
+ */
+static int rtl8733bu_power_suspend_late(struct device *dev)
+{
+	struct rtl8733bu_power *power = dev_get_drvdata(dev);
+
+	if (!power)
+		return 0;
+
+	gpiod_set_value_cansleep(power->enable_gpio, 0);
+	return 0;
+}
+
 static int rtl8733bu_power_resume(struct device *dev)
 {
 	struct rtl8733bu_power *power = dev_get_drvdata(dev);
@@ -171,6 +216,7 @@ static int rtl8733bu_power_resume(struct device *dev)
 }
 
 static const struct dev_pm_ops rtl8733bu_power_pm_ops = {
+	.suspend_late = rtl8733bu_power_suspend_late,
 	.resume = rtl8733bu_power_resume,
 };
 
