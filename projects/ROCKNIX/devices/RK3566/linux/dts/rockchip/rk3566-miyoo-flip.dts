@@ -1322,13 +1322,27 @@
 	status = "okay";
 };
 
+/* OHCI companion of the upper-port EHCI. Without it the EHCI sets PORT_OWNER and
+ * hands the port to a controller that is not there, so a device powers up but
+ * never enumerates. Stock enables it too.
+ * The clocks list adds the PHY's 480MHz, which rk356x-base.dtsi omits: OHCI needs
+ * the 48MHz derived from it, and leaving it unclaimed stopped the SoC entering
+ * deep sleep. Stock lists it as a fourth clock, "utmi". */
+&usb_host0_ohci {
+	status = "okay";
+	clocks = <&cru HCLK_USB2HOST0>, <&cru HCLK_USB2HOST0_ARB>,
+		 <&cru PCLK_USB>, <&usb2phy1>;
+};
+
 /* USB:
  *   fcc00000 usb_host0_xhci  lower USB-C charge/gadget (usb2phy0_otg)
  *   fd800000 usb_host0_ehci  upper USB-C host (usb2phy1_otg, VBUS vcc5v0_host)
+ *   fd840000 usb_host0_ohci  full/low-speed companion of the upper port
  *   fd880000 usb_host1_ehci  WiFi RTL8733BU (usb2phy1_host)
  *   fd000000 usb_host1_xhci  unused (usb2phy0_host)
  *
- * Disabled: fd840000 / fd8c0000 OHCI companions.
+ * Disabled: fd8c0000, the WiFi EHCI's companion. The RTL8733BU is high-speed and
+ * no connector shares that PHY.
  * usb_host1_xhci stays on usb2phy0_host so it does not share a PHY with WiFi. */
 
 /* Lower USB-C: charge / gadget. */
