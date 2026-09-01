@@ -1322,39 +1322,16 @@
 	status = "okay";
 };
 
-/* OHCI companion of the upper-port EHCI, on the same PHY.
- *
- * Required for the upper port to work at all, not just for full and low speed.
- * With it disabled the EHCI sat halted with PORT_OWNER set on fd800000 -- the
- * port handed off to a companion that was not there -- so a device drew VBUS
- * and lit up while nothing enumerated.  Enabling this gives the handoff a real
- * destination and the EHCI keeps the port: a high-speed hub then enumerates on
- * fd800000 itself, with this controller idle.  It also covers the full and low
- * speed devices the EHCI genuinely cannot carry.  Stock enables it too. */
-&usb_host0_ohci {
-	status = "okay";
-};
-
 /* USB:
  *   fcc00000 usb_host0_xhci  lower USB-C charge/gadget (usb2phy0_otg)
  *   fd800000 usb_host0_ehci  upper USB-C host (usb2phy1_otg, VBUS vcc5v0_host)
  *   fd880000 usb_host1_ehci  WiFi RTL8733BU (usb2phy1_host)
  *   fd000000 usb_host1_xhci  unused (usb2phy0_host)
  *
- *   fd840000 usb_host0_ohci  full/low-speed companion of the upper port
- *
- * Disabled: fd8c0000, the WiFi EHCI's companion -- the RTL8733BU is high-speed
- * and no connector shares that PHY.
+ * Disabled: fd840000 / fd8c0000 OHCI companions.
  * usb_host1_xhci stays on usb2phy0_host so it does not share a PHY with WiFi. */
 
-/* Lower USB-C: charge / gadget.
- *
- * "otg" matches stock.  Host is reachable here in principle -- stock raises the
- * RK817 OTG_SWITCH boost onto VBUS once ID reads grounded -- but that is done
- * by the BSP charger driver, not the device tree, and mainline's rk817_charger
- * has no equivalent hook.  So an adapter flips the controller to host and then
- * powers nothing.  Left as "otg" rather than pinned to "peripheral" so that
- * adding the missing hook stays a driver change, not a DTS revert. */
+/* Lower USB-C: charge / gadget. */
 &usb_host0_xhci {
 	status = "okay";
 	dr_mode = "otg";
